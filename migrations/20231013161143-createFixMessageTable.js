@@ -5,7 +5,7 @@ const Sequelize = require('sequelize');
 
 module.exports = {
   up: async (queryInterface, DataTypes) => {
-    await queryInterface.createTable('FixMessage', {
+    await queryInterface.createTable('FixMessages', {
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true,

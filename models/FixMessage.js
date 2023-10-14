@@ -1,7 +1,8 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/config.json'); // Replace with the path to your Sequelize database configuration
+//const sequelize = require('../config/config.json'); // Replace with the path to your Sequelize database configuration
+const sequelize = require('../db/connection');
 
-const FixMessage = sequelize.define('FixMessage', {
+const FixMessage = sequelize.define('FixMessages', {
   order_symbol: {
     type: DataTypes.STRING,
   },

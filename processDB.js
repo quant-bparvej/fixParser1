@@ -1,55 +1,75 @@
 const sqlite3 = require("sqlite3");
 const { Op } = require("sequelize");
-const Log = require("./models/Logs"); // Adjust the path as needed
+//const Log = require("./models/Logs"); // Adjust the path as needed
 const FixMessage = require('./models/FixMessage'); // Adjust the path as needed
+const db = require('./db/connectionSQLite');
+require('dotenv').config();
 
+
+const CHUNK_SIZE = process.env.CHUNK_SIZE;
 
 async function ConnctingToDatabase() {
   try {
-    const db = await new sqlite3.Database(
-      "SYNOSYSLOGDB_192.168.155.11.DB",
-      sqlite3.OPEN_READWRITE,
-      (err) => {
-        if (err) {
-          console.error("Error opening database:", err.message);
-          return false;
-        } else {
-          console.log("Database opened");
-        }
-        //return db;
-      }
-    );
-
+   
+    let offset = 0;
+    let insertCount = 0;
     const query =
-      "SELECT * FROM logs WHERE prog='fix_engine' and msg like 'Processed Message:%' AND msg NOT LIKE '%Received FIX MSG:%' LIMIT 1000";
-    db.all(query, [], (err, rows) => {
-      if (err) {
-        console.error("Error executing query:", err.message);
-      } else {
-        //console.log("Query result:", rows);
-        rows.forEach((row) => {
-          const msgData = row.msg; // Get the data from the msg column
-          const messageData = JSON.parse(
-            row.msg.replace("Processed Message: {", "{")
-          );
-          console.log(
-            "Message Data:",
-            JSON.stringify(messageData.trade_date, null, 2) + "\n"
-          );
-          // Create a new FixMessage record with the parsed messageData
-          FixMessage.create(messageData)
-            .then((newFixMessage) => {
-              console.log(
-                "New FixMessage record created:",
-                newFixMessage.toJSON()
-              );
-            })
-            .catch((error) => {
-              console.error("Error creating FixMessage record:", error);
-            });
-        });
+    "SELECT * FROM logs WHERE prog='fix_engine' and msg like 'Processed Message:%' AND msg NOT LIKE '%Received FIX MSG:%' and msg NOT NULL";
+    while(true){
+      const rows = await fetchDataChunk(db, query, offset, CHUNK_SIZE);
+      if (rows.length === 0) {
+        // No more data to process, break out of the loop
+        console.log('No data found');
+        break;
       }
-    });
+      else{
+        console.log("data fetched: "+rows.length+ "\n");
+        for (const row of rows) {
+          const msgData = row.msg; // Get the data from the msg column
+          const messageData = JSON.parse(row.msg.replace('Processed Message: {', '{'));
+      
+          // Insert the data into the destination database (FixMessage table)
+          try {
+            await FixMessage.create(messageData);
+            insertCount++;
+            console.log('Data inserted batch number:', insertCount);
+          } catch (error) {
+            console.error('Error inserting data:', error);
+          }
+        }
+        //console.log('........................................................................................');
+      }
+      offset += parseInt(CHUNK_SIZE, 10);
+    } 
+    
+    //   db.all(query, [], (err, rows) => {
+    //   if (err) {
+    //     console.error("Error executing query:", err.message);
+    //   } else {
+    //     //console.log("Query result:", rows);
+    //     rows.forEach((row) => {
+    //       const msgData = row.msg; // Get the data from the msg column
+    //       const messageData = JSON.parse(
+    //         row.msg.replace("Processed Message: {", "{")
+    //       );
+    //       // console.log(
+    //       //   "Message Data:",
+    //       //   JSON.stringify(messageData.trade_date, null, 2) + "\n"
+    //       // );
+    //       // Create a new FixMessage record with the parsed messageData
+    //       FixMessage.create(messageData)
+    //         .then((newFixMessage) => {
+    //           console.log(
+    //             "New FixMessage record created:",
+    //             newFixMessage.toJSON()
+    //           );
+    //         })
+    //         .catch((error) => {
+    //           console.error("Error creating FixMessage record:", error);
+    //         });
+    //     });
+    //   }
+    // });
 
     //closing db
     db.close((err) => {
@@ -60,16 +80,23 @@ async function ConnctingToDatabase() {
       }
     });
   } catch (error) {
-    console.error("Error connecting to database:", error);
+    console.error("Error fetching data:", error);
   }
   return true;
 }
 
-async function insertToDB(fixMessageObjetct) {
-  try {
-  } catch (ex) {
-    console.log(ex);
-  }
+async function fetchDataChunk(db, query, offset, limit) {
+  return new Promise((resolve, reject) => {
+    const queryWithLimit = `${query} LIMIT ${limit} OFFSET ${offset}`;
+    //console.log("Generated SQL query:", queryWithLimit);
+    db.all(queryWithLimit, [], (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
 }
 
 ConnctingToDatabase();
