@@ -8,7 +8,7 @@ require('dotenv').config();
 
 const CHUNK_SIZE = process.env.CHUNK_SIZE;
 
-async function ConnctingToDatabase() {
+async function parseFIXMessagesandInsertTOMysql() {
   try {
    
     let offset = 0;
@@ -99,4 +99,4 @@ async function fetchDataChunk(db, query, offset, limit) {
   });
 }
 
-ConnctingToDatabase();
+parseFIXMessagesandInsertTOMysql();
