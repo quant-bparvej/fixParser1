@@ -3,6 +3,7 @@ const { Op } = require("sequelize");
 //const Log = require("./models/Logs"); // Adjust the path as needed
 const FixMessage = require('./models/FixMessage'); // Adjust the path as needed
 const db = require('./db/connectionSQLite');
+const moment = require('moment-timezone');
 require('dotenv').config();
 
 
@@ -10,9 +11,13 @@ const CHUNK_SIZE = process.env.CHUNK_SIZE;
 
 async function parseFIXMessagesandInsertTOMysql() {
   try {
-   
+    //console.log('Start Time:', new Date());
+    let startTime = new Date();
+
     let offset = 0;
     let insertCount = 0;
+    const format = 'YYYYMMDD-ZHH:mm:ss.SSS';
+    
     const query =
     "SELECT * FROM logs WHERE prog='fix_engine' and msg like 'Processed Message:%' AND msg NOT LIKE '%Received FIX MSG:%' and msg NOT NULL";
     while(true){
@@ -26,7 +31,11 @@ async function parseFIXMessagesandInsertTOMysql() {
         console.log("data fetched: "+rows.length+ "\n");
         for (const row of rows) {
           const msgData = row.msg; // Get the data from the msg column
+          
           const messageData = JSON.parse(row.msg.replace('Processed Message: {', '{'));
+          const parsedDateTime = moment.tz(messageData.exch_time, format, 'UTC');
+          messageData.exch_time = parsedDateTime.format('YYYY-MM-DD HH:mm:ss.SSS');
+
       
           // Insert the data into the destination database (FixMessage table)
           try {
@@ -77,6 +86,9 @@ async function parseFIXMessagesandInsertTOMysql() {
         console.error("Error closing database:", err.message);
       } else {
         console.log("Database connection closed");
+        console.log('Ending Time:', new Date());
+        console.log('it was started at: ', startTime);
+
       }
     });
   } catch (error) {
