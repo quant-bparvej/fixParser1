@@ -2,7 +2,7 @@ const fs = require('fs');
 const { Sequelize, DataTypes } = require('sequelize');
 const { Parser, Builder  } = require('xml2js');
 
-
+const xml2js = require('xml2js');
 
 
 
@@ -29,51 +29,32 @@ function parseFIXMessageToJSONObject(fixMessage) {
 }
 
 
-function parseDBObjectToXMLFile() {
+function parseDBObjectToXMLFile(data) {
   try {
 
-///this is a dummay data for testing
-    const dummyData = [
-      {
-        Action: "New Action 1",
-        ISIN: "$isin 1",
-        AssetClass: "EQ",
-        OrderID: "$order_id 1",
-        BOID: "$boid 1",
-      },
-      {
-        Action: "New Action 2",
-        ISIN: "$isin 2",
-        AssetClass: "EQ",
-        OrderID: "$order_id 2",
-        BOID: "$boid 2",
-      },
-      {
-        Action: "New Action 3",
-        ISIN: "$isin 3",
-        AssetClass: "EQ",
-        OrderID: "$order_id 3",
-        BOID: "$boid 3",
-      },
-      // Add more data objects
-    ];
 
+    const xmlElements = data.map(item => ({
+      Detail: {
+        $: {
+          Action: "New",
+          Status: "Filled",
+          ISIN: "item.ISIN",
+          AssetClass: "EQ",
+          OrderID: item.orderid,
+      
+        },
+      },
+    }));
 
     // Define the data object to convert to XML
     const xmlData = {
-      Trades: {
-        Detail: dummyData.map(item => ({ $: item })),
-      },
+      Trades: xmlElements,
     };
+
     
     
 
-    // Create a new XML builder
-    //const builder =  Builder({ rootName: 'data' });
-    const builder = new Builder();
-    //const builder = new Builder({ rootName: 'Trades', headless: true });
-
-    // Convert data to XML
+    const builder = new xml2js.Builder();
     const xml = builder.buildObject(xmlData);
     
 
