@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { Sequelize, DataTypes } = require('sequelize');
 const { Parser, Builder  } = require('xml2js');
-
+const moment = require("moment");
 const xml2js = require('xml2js');
 
 
@@ -34,23 +34,40 @@ function parseDBObjectToXMLFile(data) {
 
 
     const xmlElements = data.map(item => ({
-      Detail: {
-        $: {
-          Action: "New",
-          Status: "Filled",
-          ISIN: "item.ISIN",
-          AssetClass: "EQ",
-          OrderID: item.orderid,
-      
-        },
+      $: {
+        Action: 'NEW', // Replace with your desired value
+        Status: item.order_status, // Replace with your desired value
+        ISIN: 'BD0637FRSL08', // Replace with your desired value
+        AssetClass: 'EQ',
+        OrderID: item.orderid, // Use the corresponding parameter from your database
+        RefOrderID: item.reforderid, // Use the corresponding parameter from your database
+        Side: item.order_side, // Use the corresponding parameter from your database
+        BOID: item.client_bo, // Use the corresponding parameter from your database
+        SecurityCode: item.order_symbol, // Use the corresponding parameter from your database
+        Board: item.board_type, // Use the corresponding parameter from your database
+        Date:  moment(item.exch_time, "YYYYMMDD").format("YYYYMMDD"),
+        Time:  moment(item.exch_time, "YYYY-MM-DD HH:mm:ss").format("HH:mm:ss"),
+        Quantity: item.order_qty, // Use the corresponding parameter from your database
+        Price: item.order_rate, // Use the corresponding parameter from your database
+        Value: item.order_qty * item.order_rate, // Calculate the value
+        ExecID: item.engineid, // Use the corresponding parameter from your database
+        Session: 'CLOSED', // Replace with your desired value
+        FillType: item.exec_type, // Replace with your desired value
+        Category: 'A', // Replace with your desired value
+        CompulsorySpot: 'N', // Replace with your desired value
+        ClientCode: item.client_bo, // Use the corresponding parameter from your database
+        TraderDealerID: 'UFTTRDR020', // Replace with your desired value
+        OwnerDealerID: 'UFTTRDR020', // Replace with your desired value
+        TradeReportType: '-', // Replace with your desired value
       },
     }));
 
     // Define the data object to convert to XML
     const xmlData = {
-      Trades: xmlElements,
+      Trades: {
+        Detail: xmlElements,
+      },
     };
-
     
     
 
