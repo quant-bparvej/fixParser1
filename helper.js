@@ -35,16 +35,22 @@ function parseDBObjectToXMLFile(data) {
 
     const xmlElements = data.map(item => ({
       $: {
-        Action: 'NEW', // Replace with your desired value
+        Action: item.exec_type === '0' ? 'New' :
+                item.exec_type === '8' ? 'Accepted' :
+                item.exec_type === 'F' ? 'Filled' :
+                item.exec_type === '5' ? 'CustomStatus1' :
+                item.exec_type === '4' ? 'CustomStatus2' :
+                item.exec_type === 'C' ? 'Canceled' : 'Unknown',
+
         Status: item.order_status, // Replace with your desired value
         ISIN: 'BD0637FRSL08', // Replace with your desired value
         AssetClass: 'EQ',
         OrderID: item.orderid, // Use the corresponding parameter from your database
         RefOrderID: item.reforderid, // Use the corresponding parameter from your database
-        Side: item.order_side, // Use the corresponding parameter from your database
+        Side: item.order_side === 1 ? "S" : item.order_side === 2 ? "B" : "-",  // Use the corresponding parameter from your database
         BOID: item.client_bo, // Use the corresponding parameter from your database
         SecurityCode: item.order_symbol, // Use the corresponding parameter from your database
-        Board: item.board_type, // Use the corresponding parameter from your database
+        
         Date:  moment(item.exch_time, "YYYYMMDD").format("YYYYMMDD"),
         Time:  moment(item.exch_time, "YYYY-MM-DD HH:mm:ss").format("HH:mm:ss"),
         Quantity: item.order_qty, // Use the corresponding parameter from your database
@@ -59,6 +65,7 @@ function parseDBObjectToXMLFile(data) {
         TraderDealerID: 'UFTTRDR020', // Replace with your desired value
         OwnerDealerID: 'UFTTRDR020', // Replace with your desired value
         TradeReportType: '-', // Replace with your desired value
+        board: item.board_type, // Use the corresponding parameter from your database
       },
     }));
 
