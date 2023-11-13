@@ -32,17 +32,36 @@ function parseFIXMessageToJSONObject(fixMessage) {
 function parseDBObjectToXMLFile(data) {
   try {
 
+    const flex_status_val = {
+      "": "REJ",
+      "0": "ACK",
+      "1": "PF",
+      "2": "FILL",
+      "4": "CXLD",  
+      "5": "RPLD",  
+      "8": "REJ",
+      "C": "EXPIRED",
+      "Z": "ACK",  
+      "U": "UNPLD"  
+  };
+
+    const order_status_val = {
+      "0": "Accepted",
+      "1": "Partially Filled",
+      "2": "Filled",
+      "4": "Cancelled",
+      "5": "Replaced",
+      "8": "Rejected",
+      "C": "Expired",
+      "Z": "Private Order",
+      "U": "Unplaced"
+  };
+
 
     const xmlElements = data.map(item => ({
       $: {
-        Action: item.exec_type === '0' ? 'New' :
-                item.exec_type === '8' ? 'Accepted' :
-                item.exec_type === 'F' ? 'Filled' :
-                item.exec_type === '5' ? 'CustomStatus1' :
-                item.exec_type === '4' ? 'CustomStatus2' :
-                item.exec_type === 'C' ? 'Canceled' : 'Unknown',
-
-        Status: item.order_status, // Replace with your desired value
+        Action: flex_status_val[item.exec_type] || 'Unknown',
+        Status: flex_status_val[item.order_status] || 'Unknown',
         ISIN: 'BD0637FRSL08', // Replace with your desired value
         AssetClass: 'EQ',
         OrderID: item.orderid, // Use the corresponding parameter from your database
@@ -57,12 +76,12 @@ function parseDBObjectToXMLFile(data) {
         Price: item.order_rate, // Use the corresponding parameter from your database
         Value: item.order_qty * item.order_rate, // Calculate the value
         ExecID: item.engineid, // Use the corresponding parameter from your database
-        Session: 'CLOSED', // Replace with your desired value
-        FillType: item.exec_type, // Replace with your desired value
+        Session: 'CONTINIOUS', // Replace with your desired value
+        FillType = item.order_status === '1' && item.exec_type === 'F' ? 'PF' : '-',
         Category: 'A', // Replace with your desired value
         CompulsorySpot: 'N', // Replace with your desired value
         ClientCode: item.client_bo, // Use the corresponding parameter from your database
-        TraderDealerID: 'UFTTRDR020', // Replace with your desired value
+        TraderDealerID: item.broker_workstation_id, // Replace with your desired value
         OwnerDealerID: 'UFTTRDR020', // Replace with your desired value
         TradeReportType: '-', // Replace with your desired value
         board: item.board_type, // Use the corresponding parameter from your database
