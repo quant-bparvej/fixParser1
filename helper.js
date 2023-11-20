@@ -39,6 +39,11 @@ async function parseDBObjectToXMLFile(data) {
     const boidToClientCodeAndDealerIdMap = await getClientData();
     const symbolsToOthersMap = await getSymbolData();
 
+    const parseToNumber = (value) => {
+      const parsedValue = parseFloat(value);
+      return isNaN(parsedValue) ? 0 : parsedValue;
+    };
+
     const flex_status_val = {
       "": "REJ",
       "0": "ACK",
@@ -78,6 +83,8 @@ async function parseDBObjectToXMLFile(data) {
 
 
     const xmlElements = data.map(item => {
+
+      console.log(".........."+item);
       let flex_status = "-";
 
       if (item.exec_type === "") {
@@ -126,14 +133,14 @@ async function parseDBObjectToXMLFile(data) {
           AssetClass: symbolsToOthersMap.get(item.order_symbol)?.symbol_instr ?? "-",
           OrderID: item.orderid, // Use the corresponding parameter from your database
           RefOrderID: item.reforderid, // Use the corresponding parameter from your database
-          Side: item.order_side === 1 ? "S" : item.order_side === 2 ? "B" : "-",
+          Side: item.order_side === "1" ? "S" : item.order_side === "2" ? "B" : "-",
           BOID: item.client_bo,
           SecurityCode: item.order_symbol,
           Date: moment(item.exch_time, "YYYYMMDD").format("YYYYMMDD"),
           Time: moment(item.exch_time, "YYYY-MM-DD HH:mm:ss").format("HH:mm:ss"),
-          Quantity: item.last_qty,
-          Price: item.last_px,
-          Value: item.last_qty * item.last_px,
+          Quantity:  !isNaN(parseFloat(item.last_qty)) ? parseFloat(item.last_qty) : 0,
+          Price: parseToNumber(item.last_px),
+          Value: parseFloat(item.last_qty) * parseFloat(item.last_px),
           ExecID: item.engineid,
           Session: sessionType, // You might want to adjust this based on your logic
           FillType: item.order_status === '1' && item.exec_type === 'F' ? 'PF' : '-',
