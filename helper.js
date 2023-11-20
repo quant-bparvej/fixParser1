@@ -32,6 +32,8 @@ function parseFIXMessageToJSONObject(fixMessage) {
 function parseDBObjectToXMLFile(data) {
   try {
 
+    
+
     const flex_status_val = {
       "": "REJ",
       "0": "ACK",
@@ -57,37 +59,52 @@ function parseDBObjectToXMLFile(data) {
       "U": "Unplaced"
   };
 
+ 
 
-    const xmlElements = data.map(item => ({
+
+  const xmlElements = data.map(item => {
+    let flex_status = "-";
+  
+    if (item.exec_type === "") {
+      flex_status = flex_status_val[item.exec_type];
+    } else if (item.exec_type === "4") {
+      flex_status = flex_status_val[item.exec_type];
+    } else if (item.exec_type === "5") {
+      flex_status = flex_status_val[item.exec_type];
+    } else {
+      flex_status = flex_status_val[item.order_status];
+    }
+  
+    return {
       $: {
-        Action: flex_status_val[item.exec_type] || 'Unknown',
-        Status: flex_status_val[item.order_status] || 'Unknown',
+        Action: "EXEC",
+        Status: flex_status ,
         ISIN: 'BD0637FRSL08', // Replace with your desired value
         AssetClass: 'EQ',
         OrderID: item.orderid, // Use the corresponding parameter from your database
         RefOrderID: item.reforderid, // Use the corresponding parameter from your database
-        Side: item.order_side === 1 ? "S" : item.order_side === 2 ? "B" : "-",  // Use the corresponding parameter from your database
-        BOID: item.client_bo, // Use the corresponding parameter from your database
-        SecurityCode: item.order_symbol, // Use the corresponding parameter from your database
-        
-        Date:  moment(item.exch_time, "YYYYMMDD").format("YYYYMMDD"),
-        Time:  moment(item.exch_time, "YYYY-MM-DD HH:mm:ss").format("HH:mm:ss"),
-        Quantity: item.order_qty, // Use the corresponding parameter from your database
-        Price: item.order_rate, // Use the corresponding parameter from your database
-        Value: item.order_qty * item.order_rate, // Calculate the value
-        ExecID: item.engineid, // Use the corresponding parameter from your database
-        Session: 'CONTINIOUS', // Replace with your desired value
-        FillType = item.order_status === '1' && item.exec_type === 'F' ? 'PF' : '-',
-        Category: 'A', // Replace with your desired value
-        CompulsorySpot: 'N', // Replace with your desired value
-        ClientCode: item.client_bo, // Use the corresponding parameter from your database
-        TraderDealerID: item.broker_workstation_id, // Replace with your desired value
-        OwnerDealerID: 'UFTTRDR020', // Replace with your desired value
-        TradeReportType: '-', // Replace with your desired value
-        board: item.board_type, // Use the corresponding parameter from your database
+        Side: item.order_side === 1 ? "S" : item.order_side === 2 ? "B" : "-",  
+        BOID: item.client_bo, 
+        SecurityCode: item.order_symbol,
+        Date: moment(item.exch_time, "YYYYMMDD").format("YYYYMMDD"),
+        Time: moment(item.exch_time, "YYYY-MM-DD HH:mm:ss").format("HH:mm:ss"),
+        Quantity: item.last_qty, 
+        Price: item.last_px,
+        Value: item.last_qty * item.last_px, 
+        ExecID: item.engineid,
+        Session: 'CONTINUOUS', // You might want to adjust this based on your logic
+        FillType: item.order_status === '1' && item.exec_type === 'F' ? 'PF' : '-',
+        Category: 'A', 
+        CompulsorySpot: 'N', 
+        ClientCode: item.client_bo, 
+        TraderDealerID: item.broker_workstation_id, 
+        OwnerDealerID: 'UFTTRDR020', 
+        TradeReportType: '-',
+        board: item.board_type,
       },
-    }));
-
+    };
+  });
+  
     // Define the data object to convert to XML
     const xmlData = {
       Trades: {

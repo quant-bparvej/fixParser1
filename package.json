@@ -16,6 +16,7 @@
     "fs": "^0.0.1-security",
     "moment": "^2.29.4",
     "moment-timezone": "^0.5.43",
+    "monent": "^0.0.2-security",
     "mysql2": "^3.6.1",
     "node-notifier": "^10.0.1",
     "sequelize": "^6.33.0",
