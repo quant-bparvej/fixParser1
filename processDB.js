@@ -24,7 +24,7 @@ async function parseFIXMessagesandInsertTOMysql() {
     const format = 'YYYYMMDD-ZHH:mm:ss.SSS';
     
     const query =
-    "SELECT * FROM logs WHERE prog='fix_engine' and msg like 'Processed Message:%' AND msg NOT LIKE '%Received FIX MSG:%' and msg NOT NULL";
+    "SELECT ldate, ltime, msg FROM logs WHERE prog='fix_engine' and msg like 'Processed Message:%' AND msg NOT LIKE '%Received FIX MSG:%' and msg NOT NULL";
 
   //     const query = `
   //   SELECT * FROM logs 
@@ -52,6 +52,8 @@ async function parseFIXMessagesandInsertTOMysql() {
           const messageData = JSON.parse(row.msg.replace('Processed Message: {', '{'));
           const parsedDateTime = moment.tz(messageData.exch_time, format, 'UTC');
           messageData.exch_time = parsedDateTime.format('YYYY-MM-DD HH:mm:ss.SSS');
+          messageData.execution_date = row.ldate;
+          messageData.execution_time = row.ltime;
 
       
           // Insert the data into the destination database (FixMessage table)

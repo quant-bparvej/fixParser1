@@ -104,6 +104,12 @@ module.exports = {
       agressor_indicator: {
         type: DataTypes.STRING,
       },
+      execution_date: {
+        type: DataTypes.DATE,
+      },
+      execution_time: {
+        type: DataTypes.TIME,
+      },
       createdAt: {
         type: DataTypes.DATE,
       },

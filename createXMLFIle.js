@@ -23,7 +23,9 @@ async function getData() {
       "broker_workstation_id",
       "exch_time",     // this is in datetime format
       "last_qty",
-      "last_px"
+      "last_px",
+      "execution_time",
+      "execution_date",
       
     ];
     await FixMessage.findAll({

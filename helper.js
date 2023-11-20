@@ -84,7 +84,7 @@ async function parseDBObjectToXMLFile(data) {
 
     const xmlElements = data.map(item => {
 
-      console.log(".........."+item.last_px);
+      //console.log(".........."+item.last_px);
       let flex_status = "-";
 
       if (item.exec_type === "") {
@@ -119,7 +119,7 @@ async function parseDBObjectToXMLFile(data) {
        /// counting the session
     const startTime = moment('10:00:00', 'HH:mm:ss');
     const endTime = moment('14:30:00', 'HH:mm:ss');
-    const orderTime = moment(item.exch_time, 'YYYY-MM-DD HH:mm:ss');
+    const orderTime = moment(item.execution_time, 'YYYY-MM-DD HH:mm:ss');
 
     const sessionType = orderTime.isBetween(startTime, endTime) ? 'CONTINUOUS' : 'CLOSED';
 
@@ -136,8 +136,8 @@ async function parseDBObjectToXMLFile(data) {
           Side: item.order_side === "1" ? "S" : item.order_side === "2" ? "B" : "-",
           BOID: item.client_bo,
           SecurityCode: item.order_symbol,
-          Date: moment(item.exch_time, "YYYYMMDD").format("YYYYMMDD"),
-          Time: moment(item.exch_time, "YYYY-MM-DD HH:mm:ss").format("HH:mm:ss"),
+          Date:  moment(item.execution_date).format("YYYY-MM-DD"),
+          Time: item.execution_time,
           Quantity:  !isNaN(parseFloat(item.last_qty)) ? parseFloat(item.last_qty) : 0,
           Price: parseToNumber(item.last_px),
           Value: parseFloat(item.last_qty) * parseFloat(item.last_px),

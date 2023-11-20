@@ -96,6 +96,12 @@ const FixMessage = sequelize.define('FixMessages', {
   agressor_indicator: {
     type: DataTypes.STRING,
   },
+  execution_date: {
+    type: DataTypes.DATE,
+  },
+  execution_time: {
+    type: DataTypes.TIME,
+  },
 });
 
 module.exports = FixMessage;
