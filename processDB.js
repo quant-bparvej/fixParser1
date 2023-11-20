@@ -5,6 +5,7 @@ const FixMessage = require('./models/FixMessage'); // Adjust the path as needed
 const db = require('./db/connectionSQLite');
 const moment = require('moment-timezone');
 const notifier = require('node-notifier');
+const momentJS = require('moment');
 require('dotenv').config();
 //import {parseDBOjectToXMLFile} from './helper';
 
@@ -16,6 +17,7 @@ async function parseFIXMessagesandInsertTOMysql() {
   try {
     //console.log('Start Time:', new Date());
     let startTime = new Date();
+    const todayDate = momentJS().format('YYYY-MM-DD');
 
     let offset = 0;
     let insertCount = 0;
@@ -23,6 +25,18 @@ async function parseFIXMessagesandInsertTOMysql() {
     
     const query =
     "SELECT * FROM logs WHERE prog='fix_engine' and msg like 'Processed Message:%' AND msg NOT LIKE '%Received FIX MSG:%' and msg NOT NULL";
+
+  //     const query = `
+  //   SELECT * FROM logs 
+  //   WHERE prog='fix_engine' 
+  //   AND msg LIKE 'Processed Message:%' 
+  //   AND msg NOT LIKE '%Received FIX MSG:%' 
+  //   AND msg IS NOT NULL 
+  //   AND ldate='${todayDate}'
+  // `;
+
+
+    console.log(query);
     while(true){
       const rows = await fetchDataChunk(db, query, offset, CHUNK_SIZE);
       if (rows.length === 0) {
