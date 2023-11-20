@@ -84,7 +84,7 @@ async function parseDBObjectToXMLFile(data) {
 
     const xmlElements = data.map(item => {
 
-      console.log(".........."+item);
+      console.log(".........."+item.last_px);
       let flex_status = "-";
 
       if (item.exec_type === "") {
