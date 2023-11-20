@@ -58,7 +58,12 @@ function parseDBObjectToXMLFile(data) {
         Value: item.order_qty * item.order_rate, // Calculate the value
         ExecID: item.engineid, // Use the corresponding parameter from your database
         Session: 'CLOSED', // Replace with your desired value
-        FillType: item.exec_type, // Replace with your desired value
+        FillType: item.exec_type === '0' ? 'New' :
+        item.exec_type === '8' ? 'Accepted' :
+        item.exec_type === 'F' ? 'Filled' :
+        item.exec_type === '5' ? 'CustomStatus1' :
+        item.exec_type === '4' ? 'CustomStatus2' :
+        item.exec_type === 'C' ? 'Canceled' : 'Unknown', // Replace with your desired value
         Category: 'A', // Replace with your desired value
         CompulsorySpot: 'N', // Replace with your desired value
         ClientCode: item.client_bo, // Use the corresponding parameter from your database
