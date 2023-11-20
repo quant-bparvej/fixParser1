@@ -1,9 +1,11 @@
-const { parseDBObjectToXMLFile } = require("./helper");
+const { parseDBObjectToXMLFile, getClientData } = require("./helper");
 const FixMessage = require("./models/FixMessage");
 const db = require("./db/connectionSQLite");
 const { Op } = require("sequelize");
 
 async function getData() {
+
+
   try {
     const paramsForTradeFile = [
       "order_symbol",
@@ -24,7 +26,7 @@ async function getData() {
     ];
     await FixMessage.findAll({
       attributes: paramsForTradeFile,
-      limit: 1000, ///add where msg=null
+      //limit: 1000, ///add where msg=null
     }).then((data) => {
       // Process the data as needed
       // data.map((result) => ({
